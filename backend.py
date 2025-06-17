@@ -1,0 +1,98 @@
+# backend.py
+
+import base64
+import os
+from dotenv import load_dotenv
+from groq import Groq
+from PIL import Image
+from io import BytesIO
+from mistralai import Mistral
+
+load_dotenv()
+
+groq_clinet = Groq()
+mistral_client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
+
+def speech_to_Text(path,language="fr"):
+
+    # Open the audio file
+    with open(path, "rb") as file:
+        # Create a transcription of the audio file
+        transcription = groq_clinet.audio.transcriptions.create(
+        file=file, # Required audio file
+        model="whisper-large-v3-turbo", # Required model to use for transcription
+        prompt="Specify context or spelling",  # Optional
+        response_format="verbose_json",  # Optional
+        timestamp_granularities = ["word", "segment"], # Optional (must set response_format to "json" to use and can specify "word", "segment" (default), or both)
+        language=language,  # Optional
+        temperature=0.0  # Optional
+        )
+        # To print only the transcription text, you'd use print(transcription.text) (here we're printing the entire transcription object to access timestamps)
+        return transcription.text
+    
+def text_to_prompt(dream_text):
+    
+    chat_completion = groq_clinet.chat.completions.create(
+        messages=[
+            # Set an optional system message. This sets the behavior of the
+            # assistant and can be used to provide specific instructions for
+            # how it should behave throughout the conversation.
+            {
+                "role": "system",
+                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 5 phrases maximum."
+            },
+            # Set a user message for the assistant to respond to.
+            {
+                "role": "user",
+                "content": dream_text,
+            }
+        ],
+
+        # The language model which will generate the completion.
+        model="llama-3.3-70b-versatile"
+    )
+
+    return chat_completion.choices[0].message.content
+
+def prompt_to_image(prompt):
+
+    mistral_image_agent = mistral_client.beta.agents.create(
+        model="mistral-medium-2505",
+        name="Image Generation Agent",
+        description="Agent used to generate images.",
+        instructions="Use the image generation tool when you have to create images.",
+        tools=[{"type": "image_generation"}],
+        completion_args={
+            "temperature": 0.3,
+            "top_p": 0.95,
+        }
+    )
+
+    response = mistral_client.beta.conversations.start(
+        agent_id=mistral_image_agent.id,
+        inputs=prompt
+    )
+
+
+    file_id = response.outputs[1].content[1].file_id
+
+
+    # Download using the ToolFileChunk ID
+    file_bytes = mistral_client.files.download(file_id=file_id).read()
+
+    # Save the file locally
+    with open(r"/Users/ad/Documents/RNCP/test_data/final_image.png", "wb") as file:
+        file.write(file_bytes)
+
+
+
+if __name__ == "__main__":
+    test_data = r"/Users/ad/Documents/RNCP/test_data/J'ai rencontré une licorne.m4a"
+    dream_text = speech_to_Text(test_data)
+    print(f" speech_to_Text : {dream_text}")
+    prompt = text_to_prompt(dream_text)
+    print(f" text_to_prompt : {prompt}")
+    image = prompt_to_image(prompt)
+    print("Finish ")
+
+
