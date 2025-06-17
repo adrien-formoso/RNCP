@@ -13,12 +13,9 @@ load_dotenv()
 groq_clinet = Groq()
 mistral_client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
 
-def speech_to_Text(path,language="fr"):
+def create_transcription(file,language="fr"):
 
-    # Open the audio file
-    with open(path, "rb") as file:
-        # Create a transcription of the audio file
-        transcription = groq_clinet.audio.transcriptions.create(
+    transcription = groq_clinet.audio.transcriptions.create(
         file=file, # Required audio file
         model="whisper-large-v3-turbo", # Required model to use for transcription
         prompt="Specify context or spelling",  # Optional
@@ -27,8 +24,20 @@ def speech_to_Text(path,language="fr"):
         language=language,  # Optional
         temperature=0.0  # Optional
         )
-        # To print only the transcription text, you'd use print(transcription.text) (here we're printing the entire transcription object to access timestamps)
-        return transcription.text
+    return transcription
+
+
+def speech_to_Text(file ,file_type = "file",language="fr",path=None):
+
+    # Open the audio file
+    if file_type=="file":
+        transcription = create_transcription(file)
+
+    else:
+        with open(file, "rb") as file:
+            transcription = create_transcription(file)
+
+    return transcription.text
     
 def text_to_prompt(dream_text):
     
@@ -88,7 +97,7 @@ def prompt_to_image(prompt):
 
 if __name__ == "__main__":
     test_data = r"/Users/ad/Documents/RNCP/test_data/crabe.m4a"
-    dream_text = speech_to_Text(test_data)
+    dream_text = speech_to_Text(test_data,file_type="path")
     print(f" speech_to_Text : {dream_text}\n\n\n")
     prompt = text_to_prompt(dream_text)
     print(f" text_to_prompt : {prompt}\n\n")

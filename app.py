@@ -1,25 +1,25 @@
 # app.py
 
 import streamlit as st
-from backend import describe_image
+import backend
 
-st.set_page_config(page_title="Conseiller de Coupe Taquin", page_icon="💇‍♂️")
+st.set_page_config(page_title="Synthétiseur de rêve", page_icon="✨")
 
-st.title("💇‍♂️ Assistant Coiffure Taquin")
-st.markdown("Bienvenue ! Envoie une photo et prépare-toi à te faire gentiment vanner tout en recevant des conseils de coupe de cheveux. 😎")
+st.title("✨ Synthétiseur de rêve")
+st.markdown("Bienvenue ! Envoie ton rêve et prépare-toi à le voir de tes yeux 😎")
 
-uploaded_file = st.file_uploader("📸 Uploade une photo de ton visage (format JPEG ou PNG)", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("🔈 Uploade ton rêve", type=["m4a", "mp4"])
 
 if uploaded_file is not None:
-    st.image(uploaded_file, caption="Voici ta magnifique tronche.", use_container_width=True)
+    with st.spinner("Analyse en cours... prépare ton ego."):
+        try:
+            dream_text = backend.speech_to_Text(uploaded_file)
+            print(f" speech_to_Text : {dream_text}\n\n\n")
+            prompt =  backend.text_to_prompt(dream_text)
+            print(f" text_to_prompt : {prompt}\n\n")
+            image =  backend.prompt_to_image(prompt)
 
-    if st.button("💬 Obtenir une recommandation (et quelques vannes)"):
-        with st.spinner("Analyse en cours... prépare ton ego."):
-            try:
-                response = describe_image(uploaded_file)
-                st.markdown("### 💇‍♂️ Recommandation & Roast :")
-                st.write(response)
-            except Exception as e:
-                st.error(f"Erreur pendant l'analyse : {e}")
+        except Exception as e:
+            st.error(f"Erreur pendant l'analyse : {e}")
 else:
     st.info("Uploade une photo pour commencer !")
