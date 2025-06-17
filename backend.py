@@ -87,12 +87,11 @@ def prompt_to_image(prompt):
 
 
 if __name__ == "__main__":
-    test_data = r"/Users/ad/Documents/RNCP/test_data/J'ai rencontré une licorne.m4a"
+    test_data = r"/Users/ad/Documents/RNCP/test_data/crabe.m4a"
     dream_text = speech_to_Text(test_data)
-    print(f" speech_to_Text : {dream_text}")
+    print(f" speech_to_Text : {dream_text}\n\n\n")
     prompt = text_to_prompt(dream_text)
-    print(f" text_to_prompt : {prompt}")
+    print(f" text_to_prompt : {prompt}\n\n")
     image = prompt_to_image(prompt)
-    print("Finish ")
 
 
