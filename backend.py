@@ -1,11 +1,8 @@
 # backend.py
 
-import base64
 import os
 from dotenv import load_dotenv
 from groq import Groq
-from PIL import Image
-from io import BytesIO
 from mistralai import Mistral
 
 load_dotenv()
