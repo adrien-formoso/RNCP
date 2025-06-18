@@ -49,7 +49,7 @@ matplotlib-inline==0.1.7
 mistralai==1.8.2
 narwhals==1.43.0
 nest-asyncio==1.6.0
-numpy==2.3.0
+numpy==1.26.0
 packaging==24.2
 pandas==2.3.0
 parso==0.8.4
