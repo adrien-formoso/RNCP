@@ -87,7 +87,7 @@ def prompt_to_image(prompt):
     file_bytes = mistral_client.files.download(file_id=file_id).read()
 
     # Save the file locally
-    with open(r"/Users/ad/Documents/RNCP/test_data/final_image.png", "wb") as file:
+    with open(r"./final_image.png", "wb") as file:
         file.write(file_bytes)
 
     return file_bytes
