@@ -66,6 +66,19 @@ Le résultat doit respecter exactement la structure spécifiée ; aucun autre ch
 
     emotions = json.loads(chat_response.choices[0].message.content)
     return emotions
+
+def classify_dream_from_emotions(emotions, seuil_peur=0.4, seuil_joie=0.3):
+    score_negatif = (
+        emotions["apeure"] +
+        emotions["anxieux"] +
+        emotions["triste"] +
+        emotions["en_colere"]
+    )
+    if score_negatif / 4 >= seuil_peur and emotions["heureux"] < seuil_joie:
+        return "cauchemar"
+    else:
+        return "rêve"
+
     
 def text_to_prompt(dream_text):
     
