@@ -1,5 +1,3 @@
-# app.py
-
 import streamlit as st
 import backend
 
@@ -15,6 +13,15 @@ if uploaded_file is not None:
         try:
             dream_text = backend.speech_to_Text(uploaded_file)
             print(f" speech_to_Text : {dream_text}\n\n\n")
+            emotions = backend.text_analysis(dream_text)
+            print(f" emotions : {emotions}\n\n")
+            
+            # Trouver l'émotion dominante
+            dominant_emotion = max(emotions, key=emotions.get)
+            dominant_score = emotions[dominant_emotion]
+            
+            st.write(f"**Émotion dominante :** {dominant_emotion.replace('_', ' ')} ({dominant_score:.2f})")
+            
             prompt =  backend.text_to_prompt(dream_text)
             print(f" text_to_prompt : {prompt}\n\n")
             image =  backend.prompt_to_image(prompt)
