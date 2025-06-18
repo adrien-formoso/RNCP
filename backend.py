@@ -45,7 +45,7 @@ def text_to_prompt(dream_text):
             # how it should behave throughout the conversation.
             {
                 "role": "system",
-                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 5 phrases maximum."
+                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 phrases maximum. Je veux tous les détails"
             },
             # Set a user message for the assistant to respond to.
             {
@@ -89,6 +89,8 @@ def prompt_to_image(prompt):
     # Save the file locally
     with open(r"/Users/ad/Documents/RNCP/test_data/final_image.png", "wb") as file:
         file.write(file_bytes)
+
+    return file_bytes
 
 
 
