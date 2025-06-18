@@ -1,9 +1,10 @@
+import wave
+import tempfile
 import streamlit as st
 from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
 import av
-import tempfile
 import os
-
+import numpy as np
 import backend
 
 st.set_page_config(page_title="Synthétiseur de rêve", page_icon="✨")
@@ -26,9 +27,11 @@ class AudioRecorder(AudioProcessorBase):
     def __init__(self):
         self.frames = []
 
-    def recv(self, frame: av.AudioFrame) -> av.AudioFrame:
-        self.frames.append(frame)
-        return frame
+    def recv_queued(self, frames):
+        self.frames.extend(frames)
+        return frames[
+            -1
+        ]  # retourne le dernier pour la sortie audio (sinon silence)
 
 
 ctx = webrtc_streamer(
@@ -36,28 +39,43 @@ ctx = webrtc_streamer(
     audio_processor_factory=AudioRecorder,
     media_stream_constraints={"video": False, "audio": True},
     async_processing=True,
+    rtc_configuration={
+        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
+    },  # (optionnel mais plus stable)
 )
+
 
 recorded_audio_path = None
 
+# Bloc : Enregistrement terminé
 if (
     ctx.audio_processor
     and not ctx.state.playing
     and ctx.audio_processor.frames
+    and recorded_audio_path
+    is None  # Important : pour éviter de re-traiter à chaque rerun
 ):
     st.success("✅ Enregistrement terminé !")
 
-    # Enregistrer temporairement l'audio en .wav
+    audio_frames = ctx.audio_processor.frames
+    samples = []
+
+    for frame in audio_frames:
+        array = frame.to_ndarray().flatten()
+        samples.append(array)
+
+    audio_data = np.concatenate(samples).astype(np.int16)
+
     recorded_audio_path = tempfile.mktemp(suffix=".wav")
-    container = av.open(recorded_audio_path, mode='w', format='wav')
-    stream = container.add_stream("pcm_s16le")
+    with wave.open(recorded_audio_path, 'wb') as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(48000)
+        wf.writeframes(audio_data.tobytes())
 
-    for frame in ctx.audio_processor.frames:
-        for packet in stream.encode(frame):
-            container.mux(packet)
-
-    container.close()
     st.audio(recorded_audio_path, format="audio/wav")
+
+    uploaded_file = None  # Force à utiliser uniquement le vocal
 
 # -- Traitement commun
 if uploaded_file or recorded_audio_path:
@@ -85,7 +103,3 @@ if uploaded_file or recorded_audio_path:
 
         except Exception as e:
             st.error(f"Erreur pendant l’analyse : {e}")
-else:
-    st.info(
-        "Tu peux uploader un fichier **ou enregistrer directement ton rêve vocalement** 🎤."
-    )
