@@ -1,6 +1,7 @@
 # backend.py
 
 import os
+import json
 from dotenv import load_dotenv
 from groq import Groq
 from mistralai import Mistral
@@ -35,6 +36,49 @@ def speech_to_Text(file ,file_type = "file",language="fr",path=None):
             transcription = create_transcription(file)
 
     return transcription.text
+
+def text_analysis(text):
+    chat_response = mistral_client.chat.complete(
+        model="mistral-large-latest",
+        messages=[
+            {
+                "role": "system",
+                "content": """Tu es un assistant d'analyse d'émotions. 
+Tu dois renvoyer STRICTEMENT un objet JSON, sans texte explicatif, contenant huit scores numériques entre 0 et 1 (inclus) mesurant l'intensité perçue dans le texte pour chacune des émotions suivantes : 
+heureux, 
+anxieux, 
+triste, 
+en_colere, 
+fatigue,
+apeure,
+surpris,
+serein.
+Attention, l'utilisateur peut faire preuve d'ironie.
+Le résultat doit respecter exactement la structure spécifiée ; aucun autre champ, commentaire ou formatage n'est autorisé."""
+            },
+            {
+                "role": "user",
+                "content": text,
+            },
+        ],
+        response_format={"type": "json_object"}
+    )
+
+    emotions = json.loads(chat_response.choices[0].message.content)
+    return emotions
+
+def classify_dream_from_emotions(emotions, seuil_peur=0.4, seuil_joie=0.3):
+    score_negatif = (
+        emotions["apeure"] +
+        emotions["anxieux"] +
+        emotions["triste"] +
+        emotions["en_colere"]
+    )
+    if score_negatif / 4 >= seuil_peur and emotions["heureux"] < seuil_joie:
+        return "cauchemar"
+    else:
+        return "rêve"
+
     
 def text_to_prompt(dream_text):
     
@@ -98,8 +142,9 @@ if __name__ == "__main__":
     test_data = r"/Users/ad/Documents/RNCP/test_data/crabe.m4a"
     dream_text = speech_to_Text(test_data,file_type="path")
     print(f" speech_to_Text : {dream_text}\n\n\n")
+    emotions = text_analysis(dream_text)
+    print(f" emotions : {emotions}\n\n")
     prompt = text_to_prompt(dream_text)
     print(f" text_to_prompt : {prompt}\n\n")
     image = prompt_to_image(prompt)
-
 
