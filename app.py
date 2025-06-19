@@ -56,17 +56,17 @@ if audio_file is not None:
             prompt = backend.text_to_prompt(dream_text)
             st.markdown("**Prompt généré :**")
             st.code(prompt)
-
-            image = backend.prompt_to_image(prompt)
-            st.image(image)
+            
             dream_text = backend.speech_to_Text(uploaded_file)
             emotions = backend.text_analysis(dream_text)
-            
+
             # Détermination de l'émotion dominante
             dominant_emotion = max(emotions, key=emotions.get)
             dominant_score = emotions[dominant_emotion]
-            st.write(f"**Émotion dominante :** {dominant_emotion.replace('_', ' ')} ({dominant_score:.2f})")
-            
+            st.write(
+                f"**Émotion dominante :** {dominant_emotion.replace('_', ' ')} ({dominant_score:.2f})"
+            )
+
             # Détermination du type de rêve
             label = backend.classify_dream_from_emotions(emotions)
             st.write(f"**Type de rêve détecté :** {label}")
