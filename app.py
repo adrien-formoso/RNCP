@@ -1,105 +1,66 @@
-import wave
-import tempfile
 import streamlit as st
-from streamlit_webrtc import webrtc_streamer, AudioProcessorBase
-import av
-import os
-import numpy as np
+from audio_recorder_streamlit import audio_recorder
 import backend
+import tempfile
 
 st.set_page_config(page_title="Synthétiseur de rêve", page_icon="✨")
 st.title("✨ Synthétiseur de rêve")
 st.markdown(
-    "Bienvenue ! Envoie ou enregistre ton rêve et prépare-toi à le voir de tes yeux 😎"
+    "Bienvenue ! Envoie ton rêve et prépare-toi à le voir de tes yeux 😎"
 )
 
-# -- Section 1 : Upload de fichier
-uploaded_file = st.file_uploader(
-    "🔈 Ou upload un fichier audio (m4a, mp4)", type=["m4a", "mp4"]
+# Choix entre upload ou micro
+input_method = st.radio(
+    "Méthode d'entrée :",
+    ["Uploader un fichier", "Enregistrer avec le micro 🎙️"],
 )
 
-# -- Section 2 : Enregistrement micro
-st.markdown("---")
-st.subheader("🎤 Enregistre ton rêve directement ici :")
+audio_file = None
 
+if input_method == "Uploader un fichier":
+    uploaded_file = st.file_uploader(
+        "🔈 Uploade ton rêve", type=["m4a", "mp3", "wav"]
+    )
+    if uploaded_file:
+        audio_file = uploaded_file
 
-class AudioRecorder(AudioProcessorBase):
-    def __init__(self):
-        self.frames = []
+elif input_method == "Enregistrer avec le micro 🎙️":
+    st.markdown(
+        "Clique sur le bouton ci-dessous pour démarrer l'enregistrement puis reclique pour l'arrêter."
+    )
+    recorded_audio = audio_recorder()
 
-    def recv_queued(self, frames):
-        self.frames.extend(frames)
-        return frames[
-            -1
-        ]  # retourne le dernier pour la sortie audio (sinon silence)
+    if recorded_audio:
+        # Crée un fichier temporaire avec le contenu audio enregistré
+        with tempfile.NamedTemporaryFile(
+            delete=False, suffix=".wav"
+        ) as tmpfile:
+            tmpfile.write(recorded_audio)
+            audio_file = tmpfile.name
+        st.audio(recorded_audio, format="audio/wav")
 
-
-ctx = webrtc_streamer(
-    key="recorder",
-    audio_processor_factory=AudioRecorder,
-    media_stream_constraints={"video": False, "audio": True},
-    async_processing=True,
-    rtc_configuration={
-        "iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]
-    },  # (optionnel mais plus stable)
-)
-
-
-recorded_audio_path = None
-
-# Bloc : Enregistrement terminé
-if (
-    ctx.audio_processor
-    and not ctx.state.playing
-    and ctx.audio_processor.frames
-    and recorded_audio_path
-    is None  # Important : pour éviter de re-traiter à chaque rerun
-):
-    st.success("✅ Enregistrement terminé !")
-
-    audio_frames = ctx.audio_processor.frames
-    samples = []
-
-    for frame in audio_frames:
-        array = frame.to_ndarray().flatten()
-        samples.append(array)
-
-    audio_data = np.concatenate(samples).astype(np.int16)
-
-    recorded_audio_path = tempfile.mktemp(suffix=".wav")
-    with wave.open(recorded_audio_path, 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(48000)
-        wf.writeframes(audio_data.tobytes())
-
-    st.audio(recorded_audio_path, format="audio/wav")
-
-    uploaded_file = None  # Force à utiliser uniquement le vocal
-
-# -- Traitement commun
-if uploaded_file or recorded_audio_path:
-    st.markdown("---")
-    st.subheader("🧠 Analyse en cours...")
-
-    with st.spinner("Transcription du rêve..."):
+# Si un fichier audio est disponible (upload ou micro), on lance l'analyse
+if audio_file is not None:
+    with st.spinner("Analyse en cours..."):
         try:
-            if uploaded_file:
-                dream_text = backend.speech_to_Text(uploaded_file)
-            else:
-                with open(recorded_audio_path, "rb") as f:
-                    dream_text = backend.speech_to_Text(f)
+            if isinstance(audio_file, str):  # Si c’est un chemin (micro)
+                dream_text = backend.speech_to_Text(
+                    audio_file, file_type="path"
+                )
+            else:  # Si c’est un fichier uploadé
+                dream_text = backend.speech_to_Text(audio_file)
 
-            st.markdown("### ✍️ Texte extrait")
+            st.success("Transcription :")
             st.write(dream_text)
 
             prompt = backend.text_to_prompt(dream_text)
-            st.markdown("### 🪄 Prompt généré")
+            st.markdown("**Prompt généré :**")
             st.code(prompt)
 
-            image_path = backend.prompt_to_image(prompt)
-            st.markdown("### 🖼️ Image de ton rêve")
-            st.image(image_path)
+            image = backend.prompt_to_image(prompt)
+            st.image(image)
 
         except Exception as e:
-            st.error(f"Erreur pendant l’analyse : {e}")
+            st.error(f"Erreur pendant l'analyse : {e}")
+else:
+    st.info("Commence par uploader ou enregistrer un audio.")
