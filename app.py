@@ -56,8 +56,7 @@ if audio_file is not None:
             prompt = backend.text_to_prompt(dream_text)
             st.markdown("**Prompt généré :**")
             st.code(prompt)
-            
-            dream_text = backend.speech_to_Text(uploaded_file)
+
             emotions = backend.text_analysis(dream_text)
 
             # Détermination de l'émotion dominante
