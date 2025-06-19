@@ -5,30 +5,35 @@ import json
 from dotenv import load_dotenv
 from groq import Groq
 from mistralai import Mistral
+from datetime import datetime
 
 load_dotenv()
 
 groq_clinet = Groq()
 mistral_client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
 
-def create_transcription(file,language="fr"):
+
+def create_transcription(file, language="fr"):
 
     transcription = groq_clinet.audio.transcriptions.create(
-        file=file, # Required audio file
-        model="whisper-large-v3-turbo", # Required model to use for transcription
+        file=file,  # Required audio file
+        model="whisper-large-v3-turbo",  # Required model to use for transcription
         prompt="Specify context or spelling",  # Optional
         response_format="verbose_json",  # Optional
-        timestamp_granularities = ["word", "segment"], # Optional (must set response_format to "json" to use and can specify "word", "segment" (default), or both)
+        timestamp_granularities=[
+            "word",
+            "segment",
+        ],  # Optional (must set response_format to "json" to use and can specify "word", "segment" (default), or both)
         language=language,  # Optional
-        temperature=0.0  # Optional
-        )
+        temperature=0.0,  # Optional
+    )
     return transcription
 
 
-def speech_to_Text(file ,file_type = "file",language="fr",path=None):
+def speech_to_Text(file, file_type="file", language="fr", path=None):
 
     # Open the audio file
-    if file_type=="file":
+    if file_type == "file":
         transcription = create_transcription(file)
 
     else:
@@ -36,6 +41,7 @@ def speech_to_Text(file ,file_type = "file",language="fr",path=None):
             transcription = create_transcription(file)
 
     return transcription.text
+
 
 def text_analysis(text):
     chat_response = mistral_client.chat.complete(
@@ -54,34 +60,35 @@ apeure,
 surpris,
 serein.
 Attention, l'utilisateur peut faire preuve d'ironie.
-Le résultat doit respecter exactement la structure spécifiée ; aucun autre champ, commentaire ou formatage n'est autorisé."""
+Le résultat doit respecter exactement la structure spécifiée ; aucun autre champ, commentaire ou formatage n'est autorisé.""",
             },
             {
                 "role": "user",
                 "content": text,
             },
         ],
-        response_format={"type": "json_object"}
+        response_format={"type": "json_object"},
     )
 
     emotions = json.loads(chat_response.choices[0].message.content)
     return emotions
 
+
 def classify_dream_from_emotions(emotions, seuil_peur=0.4, seuil_joie=0.3):
     score_negatif = (
-        emotions["apeure"] +
-        emotions["anxieux"] +
-        emotions["triste"] +
-        emotions["en_colere"]
+        emotions["apeure"]
+        + emotions["anxieux"]
+        + emotions["triste"]
+        + emotions["en_colere"]
     )
     if score_negatif / 4 >= seuil_peur and emotions["heureux"] < seuil_joie:
         return "cauchemar"
     else:
         return "rêve"
 
-    
+
 def text_to_prompt(dream_text):
-    
+
     chat_completion = groq_clinet.chat.completions.create(
         messages=[
             # Set an optional system message. This sets the behavior of the
@@ -89,23 +96,22 @@ def text_to_prompt(dream_text):
             # how it should behave throughout the conversation.
             {
                 "role": "system",
-                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 phrases maximum. Je veux tous les détails"
+                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 phrases maximum. Je veux tous les détails",
             },
             # Set a user message for the assistant to respond to.
             {
                 "role": "user",
                 "content": dream_text,
-            }
+            },
         ],
-
         # The language model which will generate the completion.
-        model="llama-3.3-70b-versatile"
+        model="llama-3.3-70b-versatile",
     )
 
     return chat_completion.choices[0].message.content
 
-def prompt_to_image(prompt):
 
+def prompt_to_image(prompt):
     mistral_image_agent = mistral_client.beta.agents.create(
         model="mistral-medium-2505",
         name="Image Generation Agent",
@@ -115,36 +121,39 @@ def prompt_to_image(prompt):
         completion_args={
             "temperature": 0.3,
             "top_p": 0.95,
-        }
+        },
     )
 
     response = mistral_client.beta.conversations.start(
-        agent_id=mistral_image_agent.id,
-        inputs=prompt
+        agent_id=mistral_image_agent.id, inputs=prompt
     )
 
-
     file_id = response.outputs[1].content[1].file_id
-
-
-    # Download using the ToolFileChunk ID
     file_bytes = mistral_client.files.download(file_id=file_id).read()
 
-    # Save the file locally
-    with open(r"./final_image.png", "wb") as file:
-        file.write(file_bytes)
+    # ✅ Dossier de destination
+    output_dir = "./generated_images"
+    os.makedirs(output_dir, exist_ok=True)
 
-    return file_bytes
+    # ✅ Nom unique basé sur timestamp
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    filename = f"dream_image_{timestamp}.png"
+    file_path = os.path.join(output_dir, filename)
 
+    # 💾 Sauvegarde de l'image
+    with open(file_path, "wb") as f:
+        f.write(file_bytes)
+
+    print(f"Image saved at: {file_path}")
+    return file_bytes  # Optionnel : return file_path si besoin
 
 
 if __name__ == "__main__":
-    test_data = r"/Users/ad/Documents/RNCP/test_data/crabe.m4a"
-    dream_text = speech_to_Text(test_data,file_type="path")
+    test_data = r"./RNCP/test_data/crabe.m4a"
+    dream_text = speech_to_Text(test_data, file_type="path")
     print(f" speech_to_Text : {dream_text}\n\n\n")
     emotions = text_analysis(dream_text)
     print(f" emotions : {emotions}\n\n")
     prompt = text_to_prompt(dream_text)
     print(f" text_to_prompt : {prompt}\n\n")
     image = prompt_to_image(prompt)
-
