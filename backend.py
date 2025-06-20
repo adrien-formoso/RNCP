@@ -1,45 +1,48 @@
-# backend.py
-
 import os
 import json
 from dotenv import load_dotenv
 from groq import Groq
 from mistralai import Mistral
 from datetime import datetime
+import math 
 
 load_dotenv()
 
-groq_clinet = Groq()
+groq_client = Groq() 
 mistral_client = Mistral(api_key=os.environ["MISTRAL_API_KEY"])
 
 
-def create_transcription(file, language="fr"):
+def read_file(file_path):
+    with open(file_path, "r") as file:
+        return file.read()
 
-    transcription = groq_clinet.audio.transcriptions.create(
-        file=file,  # Required audio file
-        model="whisper-large-v3-turbo",  # Required model to use for transcription
-        prompt="Specify context or spelling",  # Optional
-        response_format="verbose_json",  # Optional
-        timestamp_granularities=[
-            "word",
-            "segment",
-        ],  # Optional (must set response_format to "json" to use and can specify "word", "segment" (default), or both)
-        language=language,  # Optional
-        temperature=0.0,  # Optional
+def softmax(predictions):
+    exp_values = {k: math.exp(v) for k, v in predictions.items()}
+    total = sum(exp_values.values())
+    return {k: v / total for k, v in exp_values.items()}
+
+
+
+def create_transcription(file, language="fr"):
+    transcription = groq_client.audio.transcriptions.create(
+        file=file,
+        model="whisper-large-v3-turbo",
+        prompt="Specify context or spelling",
+        response_format="verbose_json",
+        timestamp_granularities=["word", "segment"],
+        language=language,
+        temperature=0.0,
     )
     return transcription
 
 
 def speech_to_Text(file, file_type="file", language="fr", path=None):
-
-    # Open the audio file
     if file_type == "file":
         transcription = create_transcription(file)
-
     else:
         with open(file, "rb") as file:
             transcription = create_transcription(file)
-
+    
     return transcription.text
 
 
@@ -49,18 +52,7 @@ def text_analysis(text):
         messages=[
             {
                 "role": "system",
-                "content": """Tu es un assistant d'analyse d'émotions. 
-Tu dois renvoyer STRICTEMENT un objet JSON, sans texte explicatif, contenant huit scores numériques entre 0 et 1 (inclus) mesurant l'intensité perçue dans le texte pour chacune des émotions suivantes : 
-heureux, 
-anxieux, 
-triste, 
-en_colere, 
-fatigue,
-apeure,
-surpris,
-serein.
-Attention, l'utilisateur peut faire preuve d'ironie.
-Le résultat doit respecter exactement la structure spécifiée ; aucun autre champ, commentaire ou formatage n'est autorisé.""",
+                "content": read_file("context_emotion.txt"),
             },
             {
                 "role": "user",
@@ -71,40 +63,47 @@ Le résultat doit respecter exactement la structure spécifiée ; aucun autre ch
     )
 
     emotions = json.loads(chat_response.choices[0].message.content)
-    return emotions
+    return softmax(emotions)
 
+    
+def get_dominant_emotion_and_score(emotions):
+    dominant_emotion = max(emotions, key=emotions.get)
+    return dominant_emotion, emotions[dominant_emotion]
 
-def classify_dream_from_emotions(emotions, seuil_peur=0.4, seuil_joie=0.3):
-    score_negatif = (
-        emotions["apeure"]
-        + emotions["anxieux"]
-        + emotions["triste"]
-        + emotions["en_colere"]
-    )
-    if score_negatif / 4 >= seuil_peur and emotions["heureux"] < seuil_joie:
+def classify_dream_from_emotions(emotions):
+    with open('reference_emotions.json') as file:
+        reference_emotions_dict = json.load(file)
+
+    positif = reference_emotions_dict["positif"]
+    negatif = reference_emotions_dict["negatif"]
+
+    # filtrer les émotions effectivement présentes
+    pos_vals = [emotions[e] for e in positif if e in emotions]
+    neg_vals = [emotions[e] for e in negatif if e in emotions]
+
+    # moyenne sur le nombre réel
+    score_positif = sum(pos_vals) / len(pos_vals) if pos_vals else 0
+    score_negatif = sum(neg_vals) / len(neg_vals) if neg_vals else 0
+
+    if score_negatif > score_positif:
         return "cauchemar"
     else:
         return "rêve"
 
 
-def text_to_prompt(dream_text):
 
-    chat_completion = groq_clinet.chat.completions.create(
+def text_to_prompt(dream_text):
+    chat_completion = groq_client.chat.completions.create(
         messages=[
-            # Set an optional system message. This sets the behavior of the
-            # assistant and can be used to provide specific instructions for
-            # how it should behave throughout the conversation.
             {
                 "role": "system",
-                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 phrases maximum. Je veux tous les détails",
+                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 sentences maximum. Je veux tous les détails",
             },
-            # Set a user message for the assistant to respond to.
             {
                 "role": "user",
                 "content": dream_text,
             },
         ],
-        # The language model which will generate the completion.
         model="llama-3.3-70b-versatile",
     )
 
@@ -131,21 +130,18 @@ def prompt_to_image(prompt):
     file_id = response.outputs[1].content[1].file_id
     file_bytes = mistral_client.files.download(file_id=file_id).read()
 
-    # ✅ Dossier de destination
     output_dir = "./generated_images"
     os.makedirs(output_dir, exist_ok=True)
 
-    # ✅ Nom unique basé sur timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"dream_image_{timestamp}.png"
     file_path = os.path.join(output_dir, filename)
 
-    # 💾 Sauvegarde de l'image
     with open(file_path, "wb") as f:
         f.write(file_bytes)
 
     print(f"Image saved at: {file_path}")
-    return file_bytes  # Optionnel : return file_path si besoin
+    return file_bytes
 
 
 if __name__ == "__main__":
