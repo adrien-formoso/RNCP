@@ -143,6 +143,24 @@ def prompt_to_image(prompt):
     print(f"Image saved at: {file_path}")
     return file_bytes
 
+def interpret_dream_with_ai(dream_text):
+    chat_response = mistral_client.chat.complete(
+        model="mistral-large-latest",
+        messages=[
+            {
+                "role": "system",
+                "content": read_file("context_interpretation.txt"),
+            },
+            {
+                "role": "user",
+                "content": dream_text,
+            },
+        ],
+        response_format={"type": "json_object"},
+    )
+
+    return json.loads(chat_response.choices[0].message.content)
+
 
 if __name__ == "__main__":
     test_data = r"./RNCP/test_data/crabe.m4a"

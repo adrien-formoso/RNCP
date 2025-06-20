@@ -45,7 +45,6 @@ if recorded_audio:
 
             # Détermination de l'émotion dominante
             dominant_emotion, dominant_score = backend.get_dominant_emotion_and_score(emotions)
-
             st.write(
                 f"**Émotion dominante :** {dominant_emotion.replace('_', ' ')} ({dominant_score:.2f})"
             )
@@ -54,10 +53,18 @@ if recorded_audio:
             dream_classification = backend.classify_dream_from_emotions(emotions)
             st.write(f"**Type de rêve détecté :** {dream_classification}")
 
-            # Génération du prompt
+            # Interprétation multi-courants via IA
+            interpretations = backend.interpret_dream_with_ai(dream_text)
+            st.markdown("### 🧠 Interprétation du rêve")
+            for approche, interpretation in interpretations.items():
+                st.markdown(f"**{approche}** : {interpretation}")
+
+            # Génération de l'image du rêve 
             prompt = backend.text_to_prompt(dream_text)
             image = backend.prompt_to_image(prompt)
             st.image(image)
+
+
 
         except Exception as e:
             st.error(f"Erreur pendant l'analyse : {e}")
