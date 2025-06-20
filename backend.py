@@ -97,7 +97,7 @@ def text_to_prompt(dream_text):
         messages=[
             {
                 "role": "system",
-                "content": "Tu est un de pormpt ingenieur. Genere moi un prompt pour generer une image de ce rêve. Je ne veux pas de conseil, juste le prompt. Je veux le rêve en 6 sentences maximum. Je veux tous les détails",
+                "content": read_file("resume_text.txt"),
             },
             {
                 "role": "user",
