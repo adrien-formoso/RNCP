@@ -1,17 +1,17 @@
 /* Import des polices Google Fonts */
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap");
 
-/* Variables CSS pour la nouvelle palette de couleurs */
+/* Variables CSS pour la palette de couleurs */
 :root {
   --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
   --purple-gradient: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-  --light-purple-gradient: linear-gradient(135deg, #f8f4ff 0%, #f0e6ff 100%);
-  --subtle-gradient: linear-gradient(
+  --dark-gradient: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+  --dream-gradient: linear-gradient(
     135deg,
-    #ffffff 0%,
-    #f8f4ff 50%,
-    #f0e6ff 100%
+    #667eea 0%,
+    #764ba2 50%,
+    #f093fb 100%
   );
 
   --primary-color: #667eea;
@@ -19,18 +19,15 @@
   --accent-color: #f093fb;
   --text-primary: #2d3748;
   --text-secondary: #718096;
-  --text-purple: #5a4fcf;
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-purple-light: #f8f4ff;
-  --glass-bg: rgba(255, 255, 255, 0.9);
-  --glass-border: rgba(118, 75, 162, 0.2);
-  --purple-glass: rgba(102, 126, 234, 0.08);
+  --bg-primary: #f7fafc;
+  --bg-secondary: #edf2f7;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
 
-  --shadow-sm: 0 2px 4px rgba(118, 75, 162, 0.1);
-  --shadow-md: 0 4px 12px rgba(118, 75, 162, 0.15);
-  --shadow-lg: 0 10px 25px rgba(118, 75, 162, 0.2);
-  --shadow-dream: 0 8px 32px rgba(102, 126, 234, 0.25);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.2);
+  --shadow-dream: 0 8px 32px rgba(102, 126, 234, 0.3);
 }
 
 /* Reset et styles de base */
@@ -40,7 +37,7 @@
   box-sizing: border-box;
 }
 
-/* Style pour le body avec fond blanc animé */
+/* Style pour le body avec animation de fond - Forcer avec !important */
 html,
 body,
 .stApp,
@@ -52,9 +49,9 @@ div[data-testid="stAppViewContainer"] {
     -apple-system,
     BlinkMacSystemFont,
     sans-serif !important;
-  background: var(--subtle-gradient) !important;
+  background: var(--dream-gradient) !important;
   background-size: 400% 400% !important;
-  animation: subtleBackground 25s ease infinite !important;
+  animation: dreamBackground 20s ease infinite !important;
   min-height: 100vh !important;
   position: relative !important;
 }
@@ -68,22 +65,17 @@ section[data-testid="stSidebar"] > div,
 .main,
 .main .block-container,
 header[data-testid="stHeader"] {
-  background: var(--subtle-gradient) !important;
+  background: var(--dream-gradient) !important;
   background-size: 400% 400% !important;
-  animation: subtleBackground 25s ease infinite !important;
+  animation: dreamBackground 20s ease infinite !important;
 }
 
-/* Animation subtile du fond */
-@keyframes subtleBackground {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
+/* Supprimer tous les backgrounds blancs */
+div[class*="css"],
+div[class*="st-"],
+section,
+header {
+  background: transparent !important;
 }
 
 /* Header transparent */
@@ -100,7 +92,20 @@ header[data-testid="stHeader"] {
   margin-top: 0 !important;
 }
 
-/* Effet de particules violettes flottantes */
+/* Animation du fond */
+@keyframes dreamBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Effet de particules flottantes sur l'app Streamlit */
 .stApp::before {
   content: "";
   position: fixed;
@@ -111,17 +116,17 @@ header[data-testid="stHeader"] {
   background-image:
     radial-gradient(
       circle at 20% 20%,
-      rgba(77, 26, 158, 0.15) 2px,
+      rgba(255, 255, 255, 0.15) 2px,
       transparent 2px
     ),
     radial-gradient(
       circle at 80% 80%,
-      rgba(77, 26, 158, 0.15) 1px,
+      rgba(255, 255, 255, 0.1) 1px,
       transparent 1px
     ),
     radial-gradient(
       circle at 40% 40%,
-      rgba(77, 26, 158, 0.15) 1.5px,
+      rgba(255, 255, 255, 0.12) 1.5px,
       transparent 1.5px
     );
   background-size:
@@ -146,7 +151,34 @@ header[data-testid="stHeader"] {
   }
 }
 
-/* Supprimer les backgrounds indésirables mais garder le blanc */
+/* Règle générale pour éliminer TOUS les backgrounds blancs */
+div,
+section,
+header,
+main,
+article,
+aside,
+nav,
+form,
+fieldset,
+button,
+input,
+textarea,
+select {
+  background-color: transparent !important;
+}
+
+/* Exception pour les éléments qui doivent garder leur background personnalisé */
+.main-container,
+.results-block,
+div[data-testid="stAudioRecorder"] > div,
+div[data-testid="stAudio"],
+div[data-testid="stImage"],
+div[data-testid="stAlert"] {
+  /* Ces éléments gardent leur background personnalisé défini ailleurs */
+}
+
+/* Forcer la transparence sur les éléments Streamlit spécifiques */
 div[class^="css-"],
 div[class*="-css-"],
 div[data-testid*="st"]:not([data-testid="stAudioRecorder"]):not(
@@ -168,25 +200,38 @@ div:empty:not([data-testid="stAudioRecorder"]):not([data-testid="stAudio"]):not(
   min-height: 0 !important;
 }
 
-/* Container principal avec effet de verre blanc */
+/* Réduire l'espace en haut de la page */
+.main .block-container {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* S'assurer que le premier élément n'a pas de marge excessive */
+.main-container:first-child,
+div[data-testid="stMarkdownContainer"]:first-child {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+/* Container principal avec effet de verre - Forcer les styles */
 .main-container {
   max-width: 800px !important;
   margin: 1rem auto !important;
   padding: 2.5rem !important;
-  background: rgba(255, 255, 255, 0.95) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(25px) !important;
   -webkit-backdrop-filter: blur(25px) !important;
-  border: 1px solid rgba(118, 75, 162, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 24px !important;
   box-shadow:
-    0 8px 32px rgba(102, 126, 234, 0.15),
-    0 2px 16px rgba(118, 75, 162, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+    0 8px 32px rgba(102, 126, 234, 0.3),
+    0 2px 16px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Titre principal avec effet holographique violet */
+/* Titre principal avec effet holographique */
 .main-title {
   font-family: "Space Grotesk", sans-serif;
   font-size: 3.5rem;
@@ -199,7 +244,7 @@ div:empty:not([data-testid="stAudioRecorder"]):not([data-testid="stAudio"]):not(
   background-clip: text;
   animation: holographic 3s ease-in-out infinite;
   margin-bottom: 1rem;
-  text-shadow: 0 0 30px rgba(102, 126, 234, 0.3);
+  text-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
 }
 
 @keyframes holographic {
@@ -212,28 +257,25 @@ div:empty:not([data-testid="stAudioRecorder"]):not([data-testid="stAudio"]):not(
   }
 }
 
-/* Introduction avec texte sombre */
+/* Introduction avec style élégant */
 .intro {
   font-size: 1.2rem;
   text-align: center;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.9);
   margin-bottom: 3rem;
   line-height: 1.6;
-  font-weight: 400;
+  font-weight: 300;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Conteneur principal de l'audio recorder - SOLUTION POUR LE FOND NOIR */
+/* Conteneur principal de l'audio recorder */
 div[data-testid="stAudioRecorder"] {
-  background: rgba(255, 255, 255, 0.95) !important;
-  border: 1px solid rgba(118, 75, 162, 0.2) !important;
-  border-radius: 20px !important;
-  padding: 2rem !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
   margin: 2rem 0 !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  box-shadow: var(--shadow-md) !important;
 }
-
 /* Sous-conteneur direct (le "card" de l'enregistreur) */
 div[data-testid="stAudioRecorder"] > div {
   background: transparent !important;
@@ -246,15 +288,38 @@ div[data-testid="stAudioRecorder"] > div {
   gap: 1rem !important;
 }
 
-/* Forcer tous les sous-éléments à avoir un fond transparent */
+
+/* Sous-conteneur direct (le "card" de l'enregistreur) */
+div[data-testid="stAudioRecorder"] > div {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-width: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+/* Suppression fond boutons et icônes */
+div[data-testid="stAudioRecorder"] button,
+div[data-testid="stAudioRecorder"] svg {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Éliminer la bordure blanche ou les zones blanches internes */
 div[data-testid="stAudioRecorder"] * {
   background-color: transparent !important;
-  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* Style amélioré pour l'icône du microphone */
 div[data-testid="stAudioRecorder"] button {
-  background: var(--primary-gradient) !important;
+  background: linear-gradient(135deg, #667eea, #764ba2) !important;
   border: none !important;
   border-radius: 50% !important;
   width: 80px !important;
@@ -264,7 +329,9 @@ div[data-testid="stAudioRecorder"] button {
   justify-content: center !important;
   cursor: pointer !important;
   transition: all 0.3s ease !important;
-  box-shadow: var(--shadow-dream) !important;
+  box-shadow: 
+    0 8px 25px rgba(102, 126, 234, 0.4),
+    0 4px 12px rgba(0, 0, 0, 0.2) !important;
   position: relative !important;
   margin: 1rem 0 !important;
 }
@@ -272,9 +339,9 @@ div[data-testid="stAudioRecorder"] button {
 /* Effet hover pour le bouton microphone */
 div[data-testid="stAudioRecorder"] button:hover {
   transform: scale(1.1) !important;
-  box-shadow:
-    0 12px 35px rgba(102, 126, 234, 0.4),
-    0 6px 18px rgba(118, 75, 162, 0.25) !important;
+  box-shadow: 
+    0 12px 35px rgba(102, 126, 234, 0.5),
+    0 6px 18px rgba(0, 0, 0, 0.25) !important;
   background: linear-gradient(135deg, #764ba2, #f093fb) !important;
 }
 
@@ -284,43 +351,53 @@ div[data-testid="stAudioRecorder"] button.recording {
 }
 
 @keyframes pulse-record {
-  0%,
-  100% {
-    box-shadow:
-      0 8px 25px rgba(102, 126, 234, 0.3),
-      0 4px 12px rgba(118, 75, 162, 0.2),
+  0%, 100% {
+    box-shadow: 
+      0 8px 25px rgba(102, 126, 234, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.2),
       0 0 0 0 rgba(240, 147, 251, 0.7) !important;
   }
   50% {
-    box-shadow:
-      0 8px 25px rgba(102, 126, 234, 0.3),
-      0 4px 12px rgba(118, 75, 162, 0.2),
+    box-shadow: 
+      0 8px 25px rgba(102, 126, 234, 0.4),
+      0 4px 12px rgba(0, 0, 0, 0.2),
       0 0 0 20px rgba(240, 147, 251, 0) !important;
   }
 }
 
-/* Hover effect pour le container */
-div[data-testid="stAudioRecorder"]:hover {
-  transform: translateY(-4px) !important;
-  box-shadow:
-    0 12px 40px rgba(102, 126, 234, 0.2),
-    0 4px 20px rgba(118, 75, 162, 0.15) !important;
-  border-color: rgba(118, 75, 162, 0.3) !important;
+/* Icône du microphone personnalisée */
+div[data-testid="stAudioRecorder"] button::before {
+  content: "🎤" !important;
+  font-size: 2rem !important;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3)) !important;
 }
 
-/* Styles pour les blocs de résultats avec fond blanc */
+/* Hover effect pour le container */
+div[data-testid="stAudioRecorder"] > div:hover {
+  transform: translateY(-4px) !important;
+  box-shadow:
+    0 12px 40px rgba(102, 126, 234, 0.4),
+    0 4px 20px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Styles pour les blocs de résultats avec effet de verre forcé */
 .results-block {
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(118, 75, 162, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 16px !important;
   padding: 1.5rem !important;
   margin: 1rem 0 !important;
-  color: var(--text-primary) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
   font-size: 1rem !important;
   line-height: 1.6 !important;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow:
+    0 4px 16px rgba(102, 126, 234, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   transition: all 0.3s ease !important;
   position: relative !important;
   overflow: hidden !important;
@@ -340,41 +417,50 @@ div[data-testid="stAudioRecorder"]:hover {
 .results-block:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-lg);
-  border-color: rgba(118, 75, 162, 0.3);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Messages de statut avec fond blanc */
+/* Messages de statut améliorés - Cibler spécifiquement les alertes Streamlit */
 div[data-testid="stAlert"] {
   border-radius: 16px !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(118, 75, 162, 0.2) !important;
-  box-shadow: var(--shadow-md) !important;
-  background: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow:
+    0 4px 16px rgba(102, 126, 234, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   margin: 1rem 0 !important;
 }
 
 div[data-testid="stAlert"] > div {
   background: transparent !important;
-  color: var(--text-primary) !important;
+  color: rgba(255, 255, 255, 0.95) !important;
   border: none !important;
 }
 
-/* Alerte d'info avec teinte violette */
+/* Cibler spécifiquement l'alerte d'info */
 div[data-testid="stAlert"][data-baseweb="notification"] {
-  background: rgba(248, 244, 255, 0.95) !important;
-  border: 1px solid rgba(102, 126, 234, 0.3) !important;
+  background: rgba(54, 162, 235, 0.15) !important;
+  border: 1px solid rgba(54, 162, 235, 0.3) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+div[data-testid="stAlert"][data-baseweb="notification"] > div {
+  background: transparent !important;
+  color: rgba(255, 255, 255, 0.95) !important;
 }
 
 /* Alerte de succès */
 div[data-testid="stAlert"]:has([data-testid="stSuccess"]) {
-  background: rgba(240, 255, 244, 0.95) !important;
+  background: rgba(46, 204, 113, 0.15) !important;
   border: 1px solid rgba(46, 204, 113, 0.3) !important;
 }
 
 /* Alerte d'erreur */
 div[data-testid="stAlert"]:has([data-testid="stError"]) {
-  background: rgba(255, 244, 244, 0.95) !important;
+  background: rgba(231, 76, 60, 0.15) !important;
   border: 1px solid rgba(231, 76, 60, 0.3) !important;
 }
 
@@ -387,7 +473,7 @@ div[data-testid="stSpinner"] {
 }
 
 div[data-testid="stSpinner"] > div {
-  border: 3px solid rgba(118, 75, 162, 0.3) !important;
+  border: 3px solid rgba(255, 255, 255, 0.3) !important;
   border-top: 3px solid var(--primary-color) !important;
   border-radius: 50% !important;
   width: 40px !important;
@@ -404,23 +490,27 @@ div[data-testid="stSpinner"] > div {
   }
 }
 
-/* Styles pour les images générées */
+/* Styles pour les images générées avec effet de verre */
 div[data-testid="stImage"] {
   display: flex !important;
   justify-content: center !important;
   margin: 2rem 0 !important;
   padding: 1rem !important;
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(118, 75, 162, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 20px !important;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow:
+    0 8px 32px rgba(102, 126, 234, 0.3),
+    0 2px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 div[data-testid="stImage"] img {
   border-radius: 16px !important;
-  box-shadow: var(--shadow-lg) !important;
+  box-shadow:
+    0 8px 32px rgba(102, 126, 234, 0.4),
+    0 2px 16px rgba(0, 0, 0, 0.2) !important;
   transition: transform 0.3s ease !important;
   max-width: 100% !important;
   height: auto !important;
@@ -429,41 +519,45 @@ div[data-testid="stImage"] img {
 div[data-testid="stImage"] img:hover {
   transform: scale(1.02) !important;
   box-shadow:
-    0 12px 40px rgba(102, 126, 234, 0.3),
-    0 4px 20px rgba(118, 75, 162, 0.2) !important;
+    0 12px 40px rgba(102, 126, 234, 0.5),
+    0 4px 20px rgba(0, 0, 0, 0.25) !important;
 }
 
 /* Styles pour les titres H3 */
 h3 {
   font-family: "Space Grotesk", sans-serif;
-  color: var(--text-purple);
+  color: rgba(255, 255, 255, 0.95);
   font-weight: 600;
   margin: 2rem 0 1rem 0;
-  text-align: center;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-/* Styles pour l'audio player */
+/* Styles pour l'audio player avec effet de verre */
 div[data-testid="stAudio"] {
   margin: 1.5rem 0 !important;
   display: flex !important;
   justify-content: center !important;
   padding: 1rem !important;
-  background: rgba(255, 255, 255, 0.9) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(20px) !important;
   -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(118, 75, 162, 0.2) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
   border-radius: 16px !important;
-  box-shadow: var(--shadow-md) !important;
+  box-shadow:
+    0 4px 16px rgba(102, 126, 234, 0.2),
+    0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
 div[data-testid="stAudio"] audio {
   border-radius: 12px !important;
-  background: rgba(248, 244, 255, 0.5) !important;
-  border: 1px solid rgba(118, 75, 162, 0.1) !important;
-  box-shadow: var(--shadow-sm) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Animation d'apparition pour les éléments */
+/* Animation d'apparition pour les éléments - Cibler les éléments Streamlit */
 .main-container > *,
 div[data-testid="stMarkdownContainer"],
 div[data-testid="stAudioRecorder"],
@@ -527,8 +621,10 @@ div[data-testid="stSpinner"] {
     font-size: 0.9rem;
   }
 
-  div[data-testid="stAudioRecorder"] {
-    padding: 1.5rem !important;
+  /* Ajustement mobile pour l'enregistreur */
+  div[data-testid="stAudioRecorder"] > div {
+    padding: 1.5rem 2rem !important;
+    min-width: 250px !important;
   }
 
   div[data-testid="stAudioRecorder"] button {
@@ -550,38 +646,67 @@ div[data-testid="stSpinner"] {
     padding: 1rem;
   }
 
-  div[data-testid="stAudioRecorder"] {
-    padding: 1rem !important;
+  div[data-testid="stAudioRecorder"] > div {
+    padding: 1rem 1.5rem !important;
+    min-width: 200px !important;
   }
 
   div[data-testid="stAudioRecorder"] button {
     width: 60px !important;
     height: 60px !important;
   }
+
+  div[data-testid="stAudioRecorder"] button::before {
+    font-size: 1.5rem !important;
+  }
 }
 
-/* Effet de lueur violette pour les éléments interactifs */
+/* Effet de lueur pour les éléments interactifs */
 .glow-effect {
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
   animation: glow 2s ease-in-out infinite alternate;
 }
 
 @keyframes glow {
   from {
-    box-shadow: 0 0 20px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.6);
   }
   to {
-    box-shadow: 0 0 30px rgba(102, 126, 234, 0.6);
+    box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
   }
 }
 
-/* Scrollbar personnalisée avec thème violet */
+/* Styles pour les boutons personnalisés (si nécessaire) */
+.dream-button {
+  background: var(--primary-gradient);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 24px;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.dream-button:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+/* Amélioration des contrastes pour l'accessibilité */
+.high-contrast {
+  color: rgba(255, 255, 255, 0.98);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Scrollbar personnalisée */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(248, 244, 255, 0.5);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 4px;
 }
 
@@ -592,4 +717,41 @@ div[data-testid="stSpinner"] {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--secondary-gradient);
+}
+
+/* Conteneur principal de l'audio recorder */
+div[data-testid="stAudioRecorder"] {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 2rem 0 !important;
+}
+
+/* Sous-conteneur direct (le "card" de l'enregistreur) */
+div[data-testid="stAudioRecorder"] > div {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  min-width: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 1rem !important;
+}
+
+/* Suppression fond boutons et icônes */
+div[data-testid="stAudioRecorder"] button,
+div[data-testid="stAudioRecorder"] svg {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Éliminer la bordure blanche ou les zones blanches internes */
+div[data-testid="stAudioRecorder"] * {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
 }
