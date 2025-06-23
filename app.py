@@ -61,7 +61,7 @@ st.markdown(
 st.markdown('<div class="main-container">', unsafe_allow_html=True)
 
 # Logo
-with open("C:/Users/HP/Downloads/DIA3_HETIC/RNCP/logo_base64.txt", "r") as f:
+with open("./RNCP/logo_base64.txt", "r") as f:
     base64_logo = f.read().strip()
 
 logo_html = f'''
